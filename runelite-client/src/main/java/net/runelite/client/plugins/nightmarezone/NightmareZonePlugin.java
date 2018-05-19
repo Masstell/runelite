@@ -30,6 +30,7 @@ import java.util.Arrays;
 import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
@@ -63,6 +64,7 @@ public class NightmareZonePlugin extends Plugin
 	// This starts as true since you need to get
 	// above the threshold before sending notifications
 	private boolean absorptionNotificationSend = true;
+	private boolean healthNotificationSend = true;
 
 	@Override
 	protected void shutDown()
@@ -97,12 +99,20 @@ public class NightmareZonePlugin extends Plugin
 			{
 				absorptionNotificationSend = true;
 			}
+			if (!healthNotificationSend)
+			{
+				healthNotificationSend = true;
+			}
 
 			return;
 		}
 		if (config.absorptionNotification())
 		{
 			checkAbsorption();
+		}
+		if (config.healthNotification())
+		{
+			checkDharoks();
 		}
 	}
 
@@ -166,6 +176,28 @@ public class NightmareZonePlugin extends Plugin
 			if (absorptionPoints > config.absorptionThreshold())
 			{
 				absorptionNotificationSend = false;
+			}
+		}
+	}
+
+	private void checkDharoks()
+	{
+		Player player = client.getLocalPlayer();
+		int health = player.getHealth();
+
+		if (!healthNotificationSend)
+		{
+			if (health > config.healthThreshold())
+			{
+				notifier.notify("Health points above: " + config.healthThreshold());
+				healthNotificationSend = true;
+			}
+		}
+		else
+		{
+			if (health > config.healthThreshold())
+			{
+				healthNotificationSend = false;
 			}
 		}
 	}
